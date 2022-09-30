@@ -2,31 +2,99 @@
   // @ts-ignore
   import words from './words.json';
 
-  let length = 5;
+  // @ts-ignore
+  String.prototype.replaceAt = function(_index, _value){
+    return this.substring(0, _index) + _value + this.substring(_index+1);
+  }
+
+  let wordLength = 5;
   let maxtries = 6;
+  let attempt = 1;
   let word = "";
+  let cursorPos = [0, 0];
+  let state = "playings";
+
   const keysRow1 = "qwertyuiop";
   const keysRow2 = "asdfghjkl";
   const keysRow3 = "!zxcvbnm@";
   const keysArr = [keysRow1, keysRow2, keysRow3];
 
+  let tries = new Array(6);
+  let blanks = ' '.repeat(wordLength);
+  tries.fill(blanks)
 
-  function lengthSelect(){
+  getWord()
+
+
+  function wordLengthSelect(){
     getWord()
   }
   
   function getWord(){
-    word = words[length][Math.floor(Math.random()*words[length].length)];
+    word = words[wordLength][Math.floor(Math.random()*words[wordLength].length)];
   }
-  getWord()
+  
+  function keyboardClick(keyPressed){
+    if(state === "gameover" || state === "win") return;
+    if(keyPressed === "enter"){
+      if(!tries[cursorPos[0]].includes(" ")){
+        if(tries[cursorPos[0]] === word){
+          tries[cursorPos[0]] = tries[cursorPos[0]]
+          state = "win";
+        }
+        cursorPos[0] += 1;
+        cursorPos[1] = 0;
+        attempt += 1;
+
+        tries[cursorPos[0]] = tries[cursorPos[0]]
+        
+        if(attempt > maxtries){
+          console.log("GAME OVER");
+          state = "gameover";
+        }
+      }
+      return;
+    }
+    if(keyPressed === "backspace"){
+      if(tries[cursorPos[0]][cursorPos[1]] === " ") 
+        if(cursorPos[1] > 0)
+          cursorPos[1] -= 1;
+      tries[cursorPos[0]] = tries[cursorPos[0]].replaceAt(cursorPos[1], " ");
+      return; 
+    }
+    tries[cursorPos[0]] = tries[cursorPos[0]].replaceAt(cursorPos[1], keyPressed)
+    if(cursorPos[1] < wordLength - 1)
+      cursorPos[1] += 1;
+
+    console.log(keyPressed, tries)
+  }
+  function getHighlight(row, index, letter){
+    if(row < attempt - 1){
+      if(word.includes(letter)){
+        if(word[index] === letter) return "highlight-success highlight";   
+        else return "highlight-warning highlight";
+      }
+      else return "highlight-error highlight";
+    }
+  }
+  function hideModal(){
+    state = "playing";
+  }
 
 </script>
 
+<div class="overlay" style="display: {state === "playing" ? "none" : "flex"};" on:click={hideModal}>
+  <div class="modal">
+    <!-- {#if state ===}
+      
+    {/if} -->
+  </div>
+</div>
 
 <div class="container">
   <div class="panel">
     <div>
-      <p>Długość: <input class="input-number" type="number" bind:value={length} on:change={lengthSelect} max="6" min="4"></p> 
+      <p>Długość: <input class="input-number" type="number" bind:value={wordLength} on:change={wordLengthSelect} max="6" min="4"></p> 
 
     </div>
     <div>
@@ -36,27 +104,34 @@
       <button class="random-button" on:click={getWord}>Losuj</button>
     </div>
   </div>
-  
-  <div class="game" style="width: {length*50 + 10}px">
-    {#each Array(maxtries) as row}
+    
+  <!-- 
+    PLANSZA
+  -->
+
+  <div class="game" style="width: {wordLength*50 + 10}px">
+    {#each tries as row, i}
       <div class="row">
-        {#each Array(length) as col}
-          <div class="letter-box"></div>
+        {#each row as letter, j}
+          <div class="letter-box {getHighlight(i, j, letter)} {letter !== " " ? "highlight-letter" : ""}">{letter}</div>
         {/each}
       </div>
     {/each}
   </div>
 
+  <!-- 
+    KLAWIATURA
+  -->
   <div class="keyboard">
     {#each keysArr as keysRow, i}
       <div class="keyboard-row row{i+1}">
         {#each keysRow as key}
           {#if key === "!"}
-              <div class="key enter">ENTER</div>
+              <div class="key enter" on:click={()=>keyboardClick("enter")}>ENTER</div>
             {:else if key === "@"}
-              <div class="key backspace">&lt;-</div>
+              <div class="key backspace" on:click={()=>keyboardClick("backspace")}>&lt;-</div>
             {:else} 
-            <div class="key">{key}</div>
+            <div class="key" on:click={()=>keyboardClick(key)}>{key}</div>
           {/if}
         {/each}
       </div>
@@ -66,10 +141,11 @@
 
 <style>
   .container{
-    width: 100vw;
-    height: auto;
+    width: 100%;
+    height: 100%;
     border: 1px solid black;
     padding: 10px;
+    font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
   }
   .panel{
     margin: 0 auto;
@@ -111,11 +187,21 @@
     margin: 1px;
     border-radius: 2px;
     background-color: #eee;
+    font-size: 26px;
+    text-align: center;
+    line-height: 45px;
+    color: #222;
+    font-weight: 700;
+    font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
+    text-transform: uppercase;
+    transform-style: preserve-3d;
+    perspective: 1000px;
   }
   .keyboard{
     width: 500px;
     height: 180px;
     margin: 0 auto;
+    margin-bottom: 20px;
     display: flex;
     flex-direction: column;
   }
@@ -145,5 +231,47 @@
   .backspace{
     font-size: 15px;
     width: 65px;
+  }
+  .highlight-error {
+    background-color: #666;
+  }
+  .highlight-success {
+    background-color: #6aaa64;
+  }
+  .highlight-warning{
+    background-color: #f7da21;
+  }
+  .highlight-letter{
+    border: 2px solid black;
+    animation: type 0.4s ease-in-out;
+  }
+  .highlight {
+    animation: flip 1s;
+  }
+  .overlay {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2;
+    justify-content: center;
+  }
+  .modal {
+    margin-top: 50px;
+    background-color: white;
+    height: 50%;
+    width: 30%;
+  }
+  @keyframes type {
+    0%   {transform: scale(1);}
+    50%  {transform: scale(1.05);}
+    100% {transform: scale(1);}
+  }
+  @keyframes flip {
+    0%   {transform: rotateX(0deg);}
+    50%  {transform: rotateX(90deg);}
+    100% {transform: rotateX(0deg);}
   }
 </style>

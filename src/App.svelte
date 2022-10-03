@@ -28,4 +28,4 @@
   </Router>
 </section>
 
-<Footer />
+<!-- <Footer /> -->

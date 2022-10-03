@@ -1,4 +1,6 @@
 <script>
+  import { prevent_default } from 'svelte/internal';
+  import Modal from './Modal.svelte';
   // @ts-ignore
   import words from './words.json';
 
@@ -23,7 +25,16 @@
   let blanks = ' '.repeat(wordLength);
   tries.fill(blanks)
 
+  window.addEventListener("keydown", (e)=>{
+    prevent_default(e);
+    let pressedKey = e.key.toLowerCase()
+    if(pressedKey === "@" || pressedKey === "!") return;
+    if(keysArr.some(arr => arr.includes(pressedKey)) || pressedKey === "enter" || pressedKey === "backspace")
+      keyboardClick(pressedKey);
+  });
+
   getWord()
+
 
 
   function wordLengthSelect(){
@@ -66,7 +77,6 @@
     if(cursorPos[1] < wordLength - 1)
       cursorPos[1] += 1;
 
-    console.log(keyPressed, tries)
   }
   function getHighlight(row, index, letter){
     if(row < attempt - 1){
@@ -83,13 +93,7 @@
 
 </script>
 
-<div class="overlay" style="display: {state === "playing" ? "none" : "flex"};" on:click={hideModal}>
-  <div class="modal">
-    <!-- {#if state ===}
-      
-    {/if} -->
-  </div>
-</div>
+<Modal isOn={state !== "playing"} title="You win" message={"siemano"} hideModal={hideModal}></Modal>
 
 <div class="container">
   <div class="panel">
@@ -247,22 +251,6 @@
   }
   .highlight {
     animation: flip 1s;
-  }
-  .overlay {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 2;
-    justify-content: center;
-  }
-  .modal {
-    margin-top: 50px;
-    background-color: white;
-    height: 50%;
-    width: 30%;
   }
   @keyframes type {
     0%   {transform: scale(1);}

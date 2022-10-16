@@ -9,7 +9,10 @@
 <div class="overlay" style="display: {isOn ? "flex" : "none"};" on:click={hideModal}>
   <div class="modal">
     <div class="header">{title}</div>
-    <div class="content">{message}</div>
+    <div class="content">
+      {message}
+    </div>
+    
   </div>
 </div>
 

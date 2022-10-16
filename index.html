@@ -5,6 +5,145 @@
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Svelte + Vite App</title>
+    <style>
+      .container {
+        width: 100%;
+        height: 100%;
+        border: 1px solid black;
+        padding: 10px;
+        font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
+      }
+      .panel {
+        margin: 0 auto;
+        width: 50%;
+        border: 1px solid black;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-evenly;
+        box-shadow: 3px 3px 3px gray;
+      }
+      .panel > * {
+        margin: 1px;
+      }
+      .input-number {
+        width: 30px;
+      }
+      .random-button {
+        background-color: rgb(200, 200, 200);
+        padding: 5px;
+        border-radius: 5px;
+      }
+      .game {
+        margin: 0 auto;
+        margin-top: 10px;
+        min-height: 350px;
+        /* border: 1px black solid; */
+        user-select: none;
+      }
+      .row {
+        height: 52px;
+        display: flex;
+        flex-direction: row;
+      }
+      .letter-box {
+        width: 50px;
+        height: 50px;
+        border: 1px solid black;
+        margin: 1px;
+        border-radius: 2px;
+        background-color: #eee;
+        font-size: 26px;
+        text-align: center;
+        line-height: 45px;
+        color: #222;
+        font-weight: 700;
+        font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
+        text-transform: uppercase;
+        transform-style: preserve-3d;
+        perspective: 1000px;
+      }
+      .keyboard {
+        width: 500px;
+        height: 180px;
+        margin: 0 auto;
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        user-select: none;
+      }
+      .keyboard-row {
+        width: 500px;
+        height: 58px;
+        display: flex;
+        margin: 0 auto;
+        margin-bottom: 8px;
+        flex-direction: row;
+        justify-content: center;
+      }
+      .key {
+        width: 43px;
+        height: 58px;
+        background-color: #eee;
+        margin-right: 6px;
+        line-height: 52px;
+        text-align: center;
+        border-radius: 5px;
+      }
+
+      .enter {
+        font-size: 15px;
+        width: 65px;
+      }
+      .backspace {
+        font-size: 15px;
+        width: 65px;
+      }
+      .highlight-error {
+        background-color: #666;
+      }
+      .highlight-success {
+        background-color: #6aaa64;
+      }
+      .highlight-warning {
+        background-color: #f7da21;
+      }
+      .highlight-letter {
+        border: 2px solid black;
+        animation: type 0.4s ease-in-out;
+      }
+      .white {
+        color: white;
+      }
+      .white.highlight-warning {
+        color: black;
+      }
+      .highlight {
+        animation: flip 1s;
+      }
+      @keyframes type {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      @keyframes flip {
+        0% {
+          transform: rotateX(0deg);
+        }
+        50% {
+          transform: rotateX(90deg);
+        }
+        100% {
+          transform: rotateX(0deg);
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="app"></div>

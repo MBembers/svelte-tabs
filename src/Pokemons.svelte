@@ -17,9 +17,6 @@
         throw new Error(data);
       }
     }
-  
-
-
   </script>
   
   <input type="text" placeholder="name..." name="filter" id="filter" style="border: 2px solid black; margin-left: 20px"

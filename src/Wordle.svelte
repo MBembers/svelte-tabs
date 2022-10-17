@@ -2,7 +2,7 @@
   import { onMount, prevent_default } from "svelte/internal";
   import Modal from "./Modal.svelte";
   // @ts-ignore
-  import words from "./words.json";
+  import * as dictionary from "word-list-json";
 
   // @ts-ignore
   String.prototype.replaceAt = function (_index, _value) {
@@ -10,7 +10,7 @@
   };
 
   let wordLength = 5;
-  let maxtries = 6;
+  let maxtries = wordLength + 1;
   let attempt = 1;
   let word = "";
   let cursorPos = [0, 0];
@@ -29,6 +29,10 @@
   let dateStart;
   let dateEnd;
   let selectHtmlValue;
+  let words = [];
+  let wordCheckingOn = true;
+
+  let popups = [];
 
   let themes = {
     light: {
@@ -88,8 +92,11 @@
     let blanks = " ".repeat(wordLength);
     tries.fill(blanks);
 
-    word =
-      words[wordLength][Math.floor(Math.random() * words[wordLength].length)];
+    console.log(dictionary);
+    let wordsStartIndex = dictionary["lengths"][wordLength - 1];
+    let wordsEndIndex = dictionary["lengths"][wordLength];
+    words = dictionary.slice(wordsStartIndex, wordsEndIndex);
+    word = words[Math.floor(Math.random() * words.length)];
     if (keyboardHtml)
       for (let keyHtml of keyboardHtml.querySelectorAll(".key")) {
         if (
@@ -154,6 +161,11 @@
     getWord();
   }
   function enterPress() {
+    if (!words.includes(tries[cursorPos[0]]) && wordCheckingOn) {
+      addPopup("To nie słowo");
+      console.log(popups);
+      return;
+    }
     if (!tries[cursorPos[0]].includes(" ")) {
       if (tries[cursorPos[0]] === word) {
         tries[cursorPos[0]] = tries[cursorPos[0]];
@@ -190,9 +202,10 @@
         modalTitle = "Wygrana!";
         dateEnd = Date.now();
         let time = (dateEnd - dateStart) / 1000;
-        modalMessage = `Slowo: ${word} \n Ilość prób: ${attempt} \n Czas: ${time.toFixed(
-          2
-        )}s`;
+        modalMessage = `Slowo: ${word} \n Ilość prób: ${
+          attempt - 1
+        } \n Czas: ${time.toFixed(2)}s`;
+        return;
       }
       if (attempt > maxtries) {
         console.log("GAME OVER");
@@ -202,6 +215,15 @@
       }
     }
     return;
+  }
+
+  function addPopup(text) {
+    popups.push(text);
+    popups = popups;
+    window.setTimeout(() => {
+      popups.shift();
+      popups = popups;
+    }, 1900);
   }
 
   onMount(() => {
@@ -237,6 +259,14 @@
 />
 
 <div class="container">
+  <div
+    class="popups-box"
+    style="display: {popups.length > 0 ? 'flex' : 'none'};"
+  >
+    {#each popups as popup}
+      <p class="popup">{popup}</p>
+    {/each}
+  </div>
   <div class="panel">
     <div>
       <p>
@@ -245,7 +275,7 @@
           type="number"
           bind:value={wordLength}
           on:change={wordLengthSelect}
-          max="6"
+          max="9"
           min="4"
         />
       </p>
@@ -269,6 +299,14 @@
         <option value="dark">ciemny motyw</option>
         <option value="highContrast">wysoki kontrast</option>
       </select>
+    </div>
+    <div class="word-check-box">
+      <label for="word-checking">sprawdzanie pisowni</label>
+      <input
+        type="checkbox"
+        name="word-checking"
+        bind:checked={wordCheckingOn}
+      />
     </div>
   </div>
 

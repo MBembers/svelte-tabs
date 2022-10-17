@@ -21,16 +21,22 @@
   const keysRow1 = "qwertyuiop";
   const keysRow2 = "asdfghjkl";
   const keysRow3 = "!zxcvbnm@";
-  const keysArr = [keysRow1, keysRow2, keysRow3];
+  const keysRow4 = "ęąćśłóńżź";
+  const keysArr = [keysRow1, keysRow2, keysRow3, keysRow4];
 
-  let tries = new Array(6);
+  let tries = new Array(maxtries);
   let keyboardHtml;
   let buton;
+  let czekboks;
+  let selekt;
   let dateStart;
   let dateEnd;
   let selectHtmlValue;
   let words = [];
   let wordCheckingOn = true;
+  let isJson = false;
+  let wordsFileName = "";
+  let json;
 
   let popups = [];
 
@@ -41,6 +47,8 @@
       text_primary: "#101010",
       text_secondary: "#fff",
       keyboard_bg: "#eee",
+      warning: "#f7da21",
+      success: "#6aaa64",
     },
     dark: {
       background_primary: "#101010",
@@ -48,20 +56,33 @@
       text_primary: "#fff",
       text_secondary: "#101010",
       keyboard_bg: "#aaa",
+      warning: "#f7da21",
+      success: "#6aaa64",
     },
-    highContrast: {
+    highContrastLight: {
+      background_primary: "white",
+      background_secondary: "#eee",
+      text_primary: "#101010",
+      text_secondary: "#fff",
+      keyboard_bg: "#eee",
+      success: "#f5793a",
+      warning: "#85c0f9",
+    },
+    highContrastDark: {
       background_primary: "#101010",
       background_secondary: "#111111",
       text_primary: "#fff",
       text_secondary: "#101010",
       keyboard_bg: "#aaa",
-      error: "#666",
+      success: "#f5793a",
+      warning: "#85c0f9",
     },
   };
 
   window.addEventListener("keydown", (e) => {
     prevent_default(e);
     let pressedKey = e.key.toLowerCase();
+    // console.log(pressedKey);
     if (pressedKey === "@" || pressedKey === "!") return;
     if (
       keysArr.some((arr) => arr.includes(pressedKey)) ||
@@ -87,16 +108,12 @@
     state = "playing";
     modalMessage = "";
     modalTitle = "";
+    maxtries = wordLength + 1;
 
-    tries = new Array(6);
+    tries = new Array(maxtries);
     let blanks = " ".repeat(wordLength);
     tries.fill(blanks);
 
-    console.log(dictionary);
-    let wordsStartIndex = dictionary["lengths"][wordLength - 1];
-    let wordsEndIndex = dictionary["lengths"][wordLength];
-    words = dictionary.slice(wordsStartIndex, wordsEndIndex);
-    word = words[Math.floor(Math.random() * words.length)];
     if (keyboardHtml)
       for (let keyHtml of keyboardHtml.querySelectorAll(".key")) {
         if (
@@ -105,10 +122,33 @@
         )
           keyHtml.className = "key";
       }
+
+    jsonIf: if (isJson) {
+      if (!json) {
+        addPopup("nie załadowano pliku");
+        isJson = false;
+        break jsonIf;
+      }
+      words = json[wordLength];
+      console.log(words);
+      if (!words) {
+        addPopup("Nie ma słów o tej długości.");
+        return;
+      }
+      word = words[Math.floor(Math.random() * words.length)];
+      return;
+    }
+
+    let wordsStartIndex = dictionary["lengths"][wordLength - 1];
+    let wordsEndIndex = dictionary["lengths"][wordLength];
+    words = dictionary.slice(wordsStartIndex, wordsEndIndex);
+    word = words[Math.floor(Math.random() * words.length)];
   }
 
   function keyboardClick(keyPressed) {
     buton.blur();
+    czekboks.blur();
+    selekt.blur();
     if (state !== "playing") return;
     if (keyPressed === "enter") {
       enterPress();
@@ -130,7 +170,7 @@
     if (row >= attempt - 1) return "";
     if (attempt === 1) return "";
 
-    console.log(letter);
+    // console.log(letter);
     let currWord = tries[row];
 
     let find = `${letter}`;
@@ -163,7 +203,7 @@
   function enterPress() {
     if (!words.includes(tries[cursorPos[0]]) && wordCheckingOn) {
       addPopup("To nie słowo");
-      console.log(popups);
+      // console.log(popups);
       return;
     }
     if (!tries[cursorPos[0]].includes(" ")) {
@@ -178,7 +218,7 @@
 
       tries[cursorPos[0]] = tries[cursorPos[0]];
 
-      console.log(keyboardHtml);
+      // console.log(keyboardHtml);
 
       for (let index = 0; index < typedWord.length; index++) {
         let letter = typedWord[index];
@@ -198,7 +238,7 @@
       }
 
       if (state === "win") {
-        console.log("WIN");
+        // console.log("WIN");
         modalTitle = "Wygrana!";
         dateEnd = Date.now();
         let time = (dateEnd - dateStart) / 1000;
@@ -208,7 +248,7 @@
         return;
       }
       if (attempt > maxtries) {
-        console.log("GAME OVER");
+        // console.log("GAME OVER");
         state = "gameover";
         modalTitle = "Przegrana";
         modalMessage = `Slowo: ${word}`;
@@ -220,15 +260,16 @@
   function addPopup(text) {
     popups.push(text);
     popups = popups;
+    if (popups.length > 3) popups.shift();
     window.setTimeout(() => {
       popups.shift();
       popups = popups;
-    }, 1900);
+    }, 2500);
   }
 
   onMount(() => {
     document.getElementById("theme").addEventListener("change", (e) => {
-      console.log(selectHtmlValue);
+      // console.log(selectHtmlValue);
       var r = document.querySelector(":root");
       r.style.setProperty(
         "--background-primary",
@@ -247,8 +288,38 @@
         themes[selectHtmlValue].text_secondary
       );
       r.style.setProperty("--keyboard-bg", themes[selectHtmlValue].keyboard_bg);
+      r.style.setProperty("--success", themes[selectHtmlValue].success);
+      r.style.setProperty("--warning", themes[selectHtmlValue].warning);
     });
   });
+
+  function hint() {
+    let x = wordCheckingOn;
+    wordCheckingOn = false;
+    for (let i = cursorPos[0]; i < tries.length - 1; i++) {
+      tries[i] =
+        word.slice(0, wordLength / 2) +
+        ".".repeat(wordLength % 2 != 0 ? wordLength / 2 + 1 : wordLength / 2);
+      enterPress();
+    }
+
+    wordCheckingOn = x;
+  }
+
+  function fileInput(event) {
+    console.log(event);
+    let fileReader = new FileReader();
+    fileReader.onload = onReaderLoad;
+    fileReader.readAsText(event.target.files[0]);
+    wordsFileName = event.target.files[0].name;
+  }
+
+  function onReaderLoad(event) {
+    console.log(event);
+    json = JSON.parse(event.target.result);
+    isJson = true;
+    getWord();
+  }
 </script>
 
 <Modal
@@ -281,7 +352,14 @@
       </p>
     </div>
     <div>
-      <p>{word}</p>
+      <div
+        class="random-button"
+        on:click={hint}
+        bind:this={buton}
+        tabindex="-1"
+      >
+        Podpowiedź
+      </div>
     </div>
     <div>
       <div
@@ -294,10 +372,11 @@
       </div>
     </div>
     <div class="theme-select">
-      <select bind:value={selectHtmlValue} id="theme">
-        <option value="light">jasny motyw</option>
-        <option value="dark">ciemny motyw</option>
-        <option value="highContrast">wysoki kontrast</option>
+      <select bind:value={selectHtmlValue} bind:this={selekt} id="theme">
+        <option value="light">jasny</option>
+        <option value="dark">ciemny</option>
+        <option value="highContrastLight">jasny kontrast</option>
+        <option value="highContrastDark">ciemny kontrast</option>
       </select>
     </div>
     <div class="word-check-box">
@@ -306,7 +385,33 @@
         type="checkbox"
         name="word-checking"
         bind:checked={wordCheckingOn}
+        bind:this={czekboks}
       />
+    </div>
+    <div class="file-box">
+      <label class="file-label">
+        &#128462;
+        <input
+          type="file"
+          style="display: none;"
+          accept=".json"
+          on:change={fileInput}
+        />
+      </label>
+      <div class="file-info">
+        <label for="isJson"
+          >słowa z jsona
+          <input
+            type="checkbox"
+            name="isjson"
+            id="isjson"
+            bind:checked={isJson}
+            on:change={getWord}
+          />
+        </label>
+
+        <span style="font-size: 14px;"><i>{wordsFileName}</i></span>
+      </div>
     </div>
   </div>
 
@@ -348,5 +453,6 @@
         {/each}
       </div>
     {/each}
+    <div class="key" data-key={"."} style="display: none;">.</div>
   </div>
 </div>

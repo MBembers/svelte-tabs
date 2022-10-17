@@ -12,6 +12,8 @@
         --text-primary: #101010;
         --text-secondary: #fff;
         --keyboard-bg: #eee;
+        --warning: #f7da21;
+        --success: #6aaa64;
       }
       body {
         background-color: var(--background-primary);
@@ -21,7 +23,7 @@
         flex-direction: column;
         justify-content: center;
         position: absolute;
-        top: 60px;
+        top: 100px;
         left: 10%;
         z-index: 100;
       }
@@ -30,21 +32,22 @@
         border-radius: 5px;
         margin: 2px;
         background-color: var(--background-primary);
-        border: var(--text-primary) 1px solid;
+        border: red 2px solid;
         color: var(--text-primary);
       }
       .container {
         width: 100%;
         height: 100%;
-        border: 1px solid black;
+        /* border: 1px solid black; */
         padding: 10px;
         color: var(--text-primary);
         font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
         position: relative;
       }
       .panel {
+        align-items: center;
         margin: 0 auto;
-        width: 50%;
+        width: 100%;
         border: 1px solid black;
         display: flex;
         flex-direction: row;
@@ -62,6 +65,20 @@
       .theme-select {
         color: black;
       }
+      .file-box {
+        cursor: pointer;
+        flex-direction: row;
+        display: flex;
+      }
+      .file-info {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .file-label {
+        font-size: 50px;
+        cursor: pointer;
+      }
       .random-button {
         background-color: var(--background-secondary);
         padding: 5px;
@@ -71,6 +88,7 @@
       .game {
         margin: 0 auto;
         margin-top: 10px;
+        margin-bottom: 10px;
         min-height: 350px;
         /* border: 1px black solid; */
         user-select: none;
@@ -125,7 +143,6 @@
         text-align: center;
         border-radius: 5px;
       }
-
       .enter {
         font-size: 15px;
         width: 65px;
@@ -138,10 +155,10 @@
         background-color: #666;
       }
       .highlight-success {
-        background-color: #6aaa64;
+        background-color: var(--success);
       }
       .highlight-warning {
-        background-color: #f7da21;
+        background-color: var(--warning);
       }
       .highlight-letter {
         border: 2px solid var(--text-primary);
